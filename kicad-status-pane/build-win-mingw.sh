@@ -22,13 +22,13 @@ fi
 # copy pane sources + apply patch (idempotent)
 bash "$HERE/apply-patch.sh" "$SRC"
 
-# configure (no OCC, no spacenav, no wxPython scripting -> no Microsoft tools needed)
+# configure (CMAKE_PREFIX_PATH=/ucrt64 so cmake finds OCC/wxWidgets/all libs in MSYS2;
+# note: KiCad 10 requires OpenCASCADE, there is no KICAD_USE_OCC=OFF anymore —
+# install mingw-w64-ucrt-x86_64-opencascade + glew first, see ANLEITUNG-WINDOWS11-OHNE-MICROSOFT.md)
 cmake -S "$SRC" -B "$BUILD" -G Ninja \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_PREFIX_PATH=/ucrt64 \
-    -DKICAD_USE_OCC=OFF \
-    -DKICAD_USE_SPNAV=OFF \
-    -DKICAD_SCRIPTING_WXPYTHON=OFF
+    -DKICAD_USE_SPNAV=OFF
 
 # full default-target build (so cmake --install gets images.tar.gz etc.)
 cmake --build "$BUILD" -j "$(nproc)"
