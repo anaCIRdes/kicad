@@ -71,7 +71,7 @@ if [ ! -f "$CHROOT/.deps-done" ]; then
             python3-dev python3-wxgtk4.0 swig \
             libngspice0-dev libboost-dev libcairo2-dev libcurl4-openssl-dev \
             libglm-dev libprotobuf-dev protobuf-compiler libgit2-dev libnng-dev \
-            libsecret-1-dev libicu-dev gettext unixodbc-dev \
+            libsecret-1-dev libicu-dev gettext unixodbc-dev libspnav-dev \
             libocct-foundation-dev libocct-modeling-data-dev libocct-modeling-algorithms-dev \
             libocct-data-exchange-dev libocct-visualization-dev libocct-ocaf-dev libocct-draw-dev \
             libpoppler-dev libpoppler-cpp-dev libpoppler-glib-dev libpoppler-qt6-dev \
