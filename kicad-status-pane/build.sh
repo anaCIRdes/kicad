@@ -20,6 +20,8 @@ fi
 echo ">>> KiCad version: $KICAD_VERSION"
 
 # --- dependencies (Debian/Ubuntu/Mint; ngspice dev pkg is libngspice0-dev on trixie) ---
+# SKIP_APT=1 ueberspringt die apt-Installation (z. B. im noble-Chroot von make-deb-ubuntu.sh)
+if [ "${SKIP_APT:-0}" != "1" ]; then
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
     build-essential cmake ninja-build git ca-certificates curl lld patch \
@@ -34,6 +36,7 @@ sudo apt-get install -y --no-install-recommends \
 # --- Debian 13 "trixie" ships no /usr/bin/wx-config binary -> install wrapper if missing ---
 if ! command -v wx-config >/dev/null 2>&1; then
     sudo bash "$HERE/wx-config-fix.sh"
+fi
 fi
 
 # --- source ---
