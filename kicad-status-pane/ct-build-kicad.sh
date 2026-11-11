@@ -36,7 +36,7 @@ apt-get install -y --no-install-recommends \
     python3-dev python3-wxgtk4.0 swig \
     libngspice0-dev libboost-dev libcairo2-dev libcurl4-openssl-dev \
     libglm-dev libprotobuf-dev protobuf-compiler libgit2-dev libnng-dev \
-    libsecret-1-dev libicu-dev gettext unzip
+    libsecret-1-dev libicu-dev gettext unzip unixodbc-dev
 
 # --- trixie ships no /usr/bin/wx-config binary -> install wrapper (KiCad's FindwxWidgets needs it) ---
 bash "$SCRIPT_DIR/wx-config-fix.sh"
