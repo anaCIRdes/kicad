@@ -39,7 +39,7 @@ diff --git a/kicad/kicad_manager_frame.cpp b/kicad/kicad_manager_frame.cpp
 diff --git a/kicad/kicad_manager_frame.cpp b/kicad/kicad_manager_frame.cpp
 --- a/kicad/kicad_manager_frame.cpp
 +++ b/kicad/kicad_manager_frame.cpp
-@@ -251,2 +251,7 @@
+@@ -247,2 +247,7 @@
      if( m_showHistoryPanel )
          m_auimgr.GetPane( m_historyPane ).Show();
 +    m_statusPane = new PROJECT_STATUS_PANE( this );
