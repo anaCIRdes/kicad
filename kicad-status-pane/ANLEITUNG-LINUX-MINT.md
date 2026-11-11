@@ -29,5 +29,27 @@ Rechner `build.sh` + `make-deb.sh` ausfuehren, das fertige .deb dann z. B. per
 SFTP auf andere Mint-22-Rechner kopieren und dort mit `sudo apt install ./...deb`
 installieren.
 
+### .deb fuer Ubuntu 24.04 / Mint 22 direkt AUF CT107 (Debian 13) bauen
+
+Auf CT107 (root) genuegt:
+
+```bash
+cd kicad-status-pane
+sudo bash make-deb-ubuntu.sh 10.0.8        # erster Lauf: mehrere Stunden
+# Langlauf: nohup sudo bash make-deb-ubuntu.sh 10.0.8 > build-ubuntu.log 2>&1 &
+# danach:   tail -f build-ubuntu.log         # Fortschritt verfolgen
+# Abbruch + Resume: Script einfach erneut starten, cmake baut dort weiter
+```
+
+`make-deb-ubuntu.sh` richtet automatisch ein **Ubuntu-24.04-Chroot** (noble, via
+debootstrap) ein, installiert darin die Build-Abhaengigkeiten (wx 3.2.4,
+OCCT 7.6, ...), baut KiCad darin und erzeugt das .deb mit `dpkg-shlibdeps` im
+Chroot. Ergebnis: `kicad-project-status_10.0.8-1_amd64.deb` — dieses .deb
+linkt gegen glibc 2.39 und laeuft auf **Ubuntu 24.04+ und Linux Mint 22+**:
+
+```bash
+sudo apt install ./kicad-project-status_10.0.8-1_amd64.deb
+```
+
 Das .deb installiert nach `/usr/local` (Binaries, Libs, Ressourcen,
 Desktop-Dateien) und registriert `/usr/local/lib` per `ldconfig`.
