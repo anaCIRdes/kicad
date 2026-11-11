@@ -9,6 +9,7 @@
 #include <kicad_manager_frame.h>
 #include <file_history.h>
 
+#include <wx/arrstr.h>
 #include <wx/button.h>
 #include <wx/dataview.h>
 #include <wx/datetime.h>
@@ -21,6 +22,7 @@
 #include <wx/stattext.h>
 #include <wx/textfile.h>
 #include <wx/utils.h>
+#include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 
 #include <utility>
@@ -59,7 +61,7 @@ class ZIP_COLLECTOR : public wxDirTraverser
 public:
     explicit ZIP_COLLECTOR( const wxString& aRoot ) : m_root( aRoot ) {}
 
-    void OnFile( const wxString& aPath ) override
+    wxDirTraverseResult OnFile( const wxString& aPath ) override
     {
         wxString rel = aPath;
 
@@ -67,9 +69,14 @@ public:
             rel.Remove( 0, 1 );
 
         m_files.emplace_back( rel, aPath );
+
+        return wxDIR_CONTINUE;
     }
 
-    void OnDir( const wxString& WXUNUSED( aDir ) ) override {}
+    wxDirTraverseResult OnDir( const wxString& WXUNUSED( aDir ) ) override
+    {
+        return wxDIR_CONTINUE;
+    }
 
     wxString                                   m_root;
     std::vector<std::pair<wxString, wxString>> m_files;    // (archive name, full path)
@@ -206,29 +213,47 @@ wxString PROJECT_STATUS_PANE::ReadCache( const wxString& aProjectFile, const wxS
 void PROJECT_STATUS_PANE::WriteCache( const wxString& aProjectFile, const wxString& aKey,
                                       const wxString& aValue ) const
 {
-    wxString   file = CacheFileFor( aProjectFile );
-    wxTextFile t;
+    wxString file = CacheFileFor( aProjectFile );
+
+    // read existing lines (wxTextFile has no SetLine/filename-Write in wx 3.2)
+    wxArrayString lines;
 
     if( wxFileExists( file ) )
-        t.Open( file );
+    {
+        wxTextFile t;
+
+        if( t.Open( file ) && t.IsOpened() )
+        {
+            for( size_t i = 0; i < t.GetLineCount(); ++i )
+                lines.Add( t.GetLine( i ) );
+        }
+    }
 
     wxString prefix = aKey + "=";
     bool     found  = false;
 
-    for( size_t i = 0; i < t.GetLineCount(); ++i )
+    for( size_t i = 0; i < lines.size(); ++i )
     {
-        if( t.GetLine( i ).StartsWith( prefix ) )
+        if( lines[i].StartsWith( prefix ) )
         {
-            t.SetLine( i, prefix + aValue );
-            found = true;
+            lines[i] = prefix + aValue;
+            found      = true;
             break;
         }
     }
 
     if( !found )
-        t.AddLine( prefix + aValue );
+        lines.Add( prefix + aValue );
 
-    t.Write( file );
+    wxFFile f( file, "w" );
+
+    if( !f.IsOpened() )
+        return;
+
+    for( const auto& l : lines )
+        f.Write( l + "\n" );
+
+    f.Close();
 }
 
 
@@ -286,7 +311,7 @@ void PROJECT_STATUS_PANE::DoBackup( const wxString& aProjectFile )
     wxString   zipPath = dir + wxFILE_SEP_PATH + fn.GetName() + "_backup_" + stamp + ".zip";
 
     {
-        wxFFileOutputStream out( zipPath );
+        wxFileOutputStream out( zipPath );
 
         if( !out.IsOk() )
         {
