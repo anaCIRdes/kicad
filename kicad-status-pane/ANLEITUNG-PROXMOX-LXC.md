@@ -71,7 +71,7 @@ Falls der Patch mit `git apply` doch meckert, im Container manuell:
 ```bash
 cd /home/kicad/kicad-src
 cp ../kicad-status-pane/src/project_status_pane.* kicad/
-patch -p1 --fuzz=3 < ../kicad-status-pane/patches/mod.patch
+patch --batch --forward -p1 --fuzz=3 < ../kicad-status-pane/patches/mod.patch
 ```
 
 Dauer: ca. 1–3 h.
