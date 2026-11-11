@@ -17,7 +17,7 @@ Empfohlener Weg: offizieller KiCad-Windows-Build mit MSYS2/MSVC
    ```
 4. Konfigurieren + bauen:
    ```powershell
-   cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DKICAD_USE_OCC=OFF -DKICAD_USE_SPNAV=OFF
+   cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DKICAD_USE_SPNAV=OFF
    cmake --build build --target kicad kicad-cli
    ```
 5. Start: `build\kicad\kicad.exe`
