@@ -72,3 +72,11 @@ else
 fi
 echo ">>> done. Binaries in $OUT"
 ls -la "$OUT"
+
+# --- install to /usr/local (binaries in PATH + resources/schemas under /usr/local/share/kicad) ---
+# skip with: SKIP_INSTALL=1 bash ct-build-kicad.sh
+if [ "${SKIP_INSTALL:-0}" != "1" ]; then
+    echo ">>> installing to /usr/local (resources, schemas, binaries) ..."
+    cmake --install "$BUILD" --prefix /usr/local
+    echo ">>> installed. Start with: kicad   (kicad-cli is in PATH now)"
+fi
