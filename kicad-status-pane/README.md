@@ -25,6 +25,7 @@ bzw. `./build.sh 10.0.8`.
 | `wx-config-fix.sh` | installiert `/usr/local/bin/wx-config`-Wrapper (Debian 13/trixie hat kein wx-config-Binary mehr; KiCad braucht es zwingend) |
 | `build.sh` | kompletter Build unter Linux Mint/Ubuntu/Debian |
 | `ct-build-kicad.sh` | kompletter Build **im Debian-13-LXC** (als root, z. B. CT107) |
+| `build-win-mingw.sh` | kompletter Build unter **Windows 11 ohne Microsoft-Tools** (MSYS2 UCRT64 + MinGW, in der ucrt64.exe-Shell ausfuehren) |
 | `proxmox-kicad-lxc.sh` | **OPTIONAL**, nur Proxmox-Host (legt CT automatisch an) |
 | `ANLEITUNG-*.md` | Schritt-für-Schritt-Anleitungen |
 
