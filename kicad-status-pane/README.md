@@ -22,6 +22,7 @@ bzw. `./build.sh 10.0.8`.
 | `src/project_status_pane.{h,cpp}` | neue Panel-Klasse |
 | `patches/mod.patch` | 5-Hunk-Patch für `kicad/CMakeLists.txt`, `kicad_manager_frame.{h,cpp}` |
 | `apply-patch.sh` | kopiert die Quellen und wendet den Patch an (git apply, Fallback patch(1)) |
+| `wx-config-fix.sh` | installiert `/usr/local/bin/wx-config`-Wrapper (Debian 13/trixie hat kein wx-config-Binary mehr; KiCad braucht es zwingend) |
 | `build.sh` | kompletter Build unter Linux Mint/Ubuntu/Debian |
 | `ct-build-kicad.sh` | kompletter Build **im Debian-13-LXC** (als root, z. B. CT107) |
 | `proxmox-kicad-lxc.sh` | **OPTIONAL**, nur Proxmox-Host (legt CT automatisch an) |
