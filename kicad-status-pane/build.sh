@@ -23,10 +23,17 @@ echo ">>> KiCad version: $KICAD_VERSION"
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends \
     build-essential cmake ninja-build git ca-certificates curl lld patch \
-    libwxgtk3.2-dev python3-dev python3-wxgtk4.0 swig \
+    libwxgtk3.2-dev libwxgtk-webview3.2-dev libwxgtk-media3.2-dev \
+    libgtk-3-dev libwebkit2gtk-4.1-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+    python3-dev python3-wxgtk4.0 swig \
     libngspice0-dev libboost-dev libcairo2-dev libcurl4-openssl-dev \
     libglm-dev libprotobuf-dev protobuf-compiler libgit2-dev libnng-dev \
     libsecret-1-dev libicu-dev gettext
+
+# --- Debian 13 "trixie" ships no /usr/bin/wx-config binary -> install wrapper if missing ---
+if ! command -v wx-config >/dev/null 2>&1; then
+    sudo bash "$HERE/wx-config-fix.sh"
+fi
 
 # --- source ---
 if [ ! -d "$SRC/.git" ]; then
