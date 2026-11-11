@@ -66,3 +66,11 @@ else
 fi
 echo ">>> done. Binaries in $OUT ; start with: $BUILD/kicad/kicad"
 ls -la "$OUT"
+
+# --- install to /usr/local (binaries in PATH + resources/schemas) ---
+# skip with: SKIP_INSTALL=1 ./build.sh
+if [ "${SKIP_INSTALL:-0}" != "1" ]; then
+    echo ">>> installing to /usr/local ..."
+    sudo cmake --install "$BUILD" --prefix /usr/local
+    echo ">>> installed. Start with: kicad"
+fi
