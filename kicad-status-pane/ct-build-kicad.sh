@@ -59,7 +59,9 @@ cmake -S "$SRC" -B "$BUILD" -G Ninja \
     -DKICAD_SCRIPTING_PYTHON3=ON \
     -DKICAD_USE_OCC=OFF \
     -DKICAD_USE_SPNAV=OFF
-cmake --build "$BUILD" --target kicad kicad-cli -j"$(nproc)"
+# full build (default target): also builds resources like images.tar.gz,
+# which cmake --install needs; building only "kicad kicad-cli" breaks the install
+cmake --build "$BUILD" -j"$(nproc)"
 
 mkdir -p "$OUT"
 cp "$BUILD/kicad/kicad" "$OUT/"
