@@ -46,9 +46,9 @@ bash ct-build-kicad.sh        # root-Rechte reichen, KEIN sudo nötig
 ```
 
 Wichtige trixie-Fixes sind bereits eingebaut: Dev-Paket heißt **`libngspice0-dev`**
-(nicht `libngspice-dev`), CMake braucht **`-DKICAD_USE_SPNAV=OFF`** zusätzlich zu
-`-DKICAD_USE_OCC=OFF`, und **wx-config** wird als Wrapper nachinstalliert
-(siehe unten). Version auto-erkannt (aktuell **10.0.8**).
+(nicht `libngspice-dev`), CMake braucht **`-DKICAD_USE_SPNAV=OFF`**, OpenCASCADE
+ist Pflicht und wird als **`libopencascade-dev`** mitinstalliert, und **wx-config**
+wird als Wrapper nachinstalliert (siehe unten). Version auto-erkannt (aktuell **10.0.8**).
 
 **wx-config-Hinweis (trixie):** Debian 13 liefert das `wx-config`-Binary nicht mehr
 im Paket, aber das komplette Skript liegt unter
