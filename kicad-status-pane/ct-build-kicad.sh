@@ -62,6 +62,13 @@ cmake -S "$SRC" -B "$BUILD" -G Ninja \
 cmake --build "$BUILD" --target kicad kicad-cli -j"$(nproc)"
 
 mkdir -p "$OUT"
-cp "$BUILD/kicad/kicad" "$OUT/" 2>/dev/null || true
-cp "$BUILD/kicad-cli/kicad-cli" "$OUT/" 2>/dev/null || true
+cp "$BUILD/kicad/kicad" "$OUT/"
+# kicad-cli output path differs between KiCad versions -> locate it robustly
+KICAD_CLI="$(find "$BUILD" -type f -name kicad-cli -perm -u+x | head -1)"
+if [ -n "$KICAD_CLI" ]; then
+    cp "$KICAD_CLI" "$OUT/"
+else
+    echo "WARNING: kicad-cli binary not found in $BUILD" >&2
+fi
 echo ">>> done. Binaries in $OUT"
+ls -la "$OUT"
