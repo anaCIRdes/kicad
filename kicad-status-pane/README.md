@@ -3,16 +3,38 @@
 Erweitert den KiCad-Projektmanager um ein neues Panel **„Project Status"** (rechte Seite):
 
 - Übersicht der zuletzt geöffneten Projekte (aus der KiCad-Dateihistorie)
-- Schnellaktionen pro Projekt: **Open**,(əݱѕȨȀȩ	ō͕(ȀȩIȨނ¤U$2¢{
-ʑ^ܝ
-ʂˈЋєЈ0\ȘZژؙXۚYȊԓӋKY^]XۙK]ڛۘ][ۜ؊KؘڙH[ۚٚݏˋښXؙܝ]\טؘڙKݞ[ޞٚYو[ș\ȓ\ݙH[Șыޕ؈
-\ܛܜ˕؜ۚ[ٜʂˈؘڝ\Hۛ\]\ȔۚٚݝٜޙZXڛڜȘ[ȖҔZ]ٚ]ݙ[\[ˈ^ܝHؙٜ\ȊȐۚ٘][ȊȔؚ[[˔țؘڈۚٚݏ˜ۙXݚ[ۋ؂ȈڐؙUٜܚ[ۂ]]ˑ\ڙ[۝[و\țٝY\ݙ[ȜݘXڛ[ȔٛX\ٜȊZݝY[
-ʌL̋ΊʎȘ
-ˎNKʘQ]˕Y܈[قԙ[X\ًR؛ٚY][ȝٜٙ[Ȱ\ܜݛٙ[ʋȑٜ݈𩚛؜ΈҐБՑTԒSӏLL̋Έ؜ڈ݋Xݚ[Zژؙܚ؞݋Ș˘ݚ[ܚL̋΂Ȉ[ژ[]ZHݙXڈ߈KKKHKKH߈ܘ˜ۚ٘ݗܝ]\ל[ًޚܜXٝYH[ٛRۘ\ܙH߈]ڙ\˛[ًܘ]ژKR[ڋT]ڈЯȘژؙГXZٓ\ݜ˝ژؙۘ[ؙٜיܘ[YKޚܜX߈\K\]ڋܚۜY\݈YH]Y[[ȝ[وٛٙ][Ȕ]ڈ[Ȋڝ\K؛ؘڈ]ڊJJH߈ݚ[ܚۛ\]\Ȑݚ[[ݙ\ȓ[ݞZ[݋՘ݛݝKљXژ[ȟ߈݋Xݚ[Zژؙܚۛ\]\Ȑݚ[
-ʚ[HXژ[ˌL˓ʊȊ[Ȝۛ݋ˈˈՌLʈ߈۞[ދZژؙ[˜ژ
-ʓԕSӐS
-ʋݜȔ۞[ދRܝ
-Y݈Ո]]ۘ]\ؚ[ʈ߈SӑRUSыJ˛YؚڝYЯ˔ؚڝP[ۙZ][ٙ[ȟȈؚٛݘ\݈۞[ވȊ[\ۚ[ʂKȐՌLȚ[ș\Ȕ۞[ދQՒHX[ݙ[[ۙYٛȊXژ[ȌLˈ[ܜڝڛYٙۛݙ܈]Y
-ʖє˔ۛRJʋۘ܌ˈˈL̋̋̌ˌ͋ٜۜˈЈГJB̋ȔԒZ[ܚXڝ[ȊȞڜۜY\ٛȸ%ڙZHSӑRUSыTӖS֋S˛Y̋Ȓ[HۛݘZ[ٜΈ؜ڈ݋Xݚ[Zژؙܚ
-x$̈
-B͋Ȑڛ؜ڙ\ȘXڛۙ[Έ݈[LȋڛۙKښXؙښXؙXݚ[[ݝښXؙ˚ژؙȈؚٛݘ\݈ژ[\ȓ[ݞ˘ݚ[ܚțٙ\Έ˘ݚ[ܚL̋΂
+- Schnellaktionen pro Projekt: **Open**, **Folder**, **Backup**, **DRC**, **ERC**, **Export**
+- DRC/ERC über `kicad-cli` (JSON, `--exit-code-violations`), Cache in
+  `<projekt>/.kicad_status_cache.txt`, Anzeige in der Liste als `zE/zW` (Errors/Warnings)
+- Backup = komplettes Projektverzeichnis als ZIP mit Zeitstempel
+- Export = Gerber + Bohrdaten + Schaltplan-PDF nach `<projekt>/production/`
+
+## KiCad-Version
+
+Auto-Erkennung des neuesten stabilen Releases (aktuell **10.0.8**; `*.99.*`-Dev-Tags und
+Release-Kandidaten werden übersprungen). Fest wählbar: `KICAD_VERSION=10.0.8 bash ct-build-kicad.sh`
+bzw. `./build.sh 10.0.8`.
+
+## Inhalt
+
+| Datei | Zweck |
+| --- | --- |
+| `src/project_status_pane.{h,cpp}` | neue Panel-Klasse |
+| `patches/mod.patch` | 5-Hunk-Patch für `kicad/CMakeLists.txt`, `kicad_manager_frame.{h,cpp}` |
+| `apply-patch.sh` | kopiert die Quellen und wendet den Patch an (git apply, Fallback patch(1)) |
+| `build.sh` | kompletter Build unter Linux Mint/Ubuntu/Debian |
+| `ct-build-kicad.sh` | kompletter Build **im Debian-13-LXC** (als root, z. B. CT107) |
+| `proxmox-kicad-lxc.sh` | **OPTIONAL**, nur Proxmox-Host (legt CT automatisch an) |
+| `ANLEITUNG-*.md` | Schritt-für-Schritt-Anleitungen |
+
+## Schnellstart Proxmox LXC (empfohlen)
+
+1. CT107 in der Proxmox-GUI manuell anlegen (Debian 13, unprivileged, rootfs auf
+   **ZFS-Pool-HDD1**, vmbr0, z. B. 10.0.0.107/24, 4 Cores, 8 GB RAM)
+2. SSH einrichten + zip kopieren — siehe `ANLEITUNG-PROXMOX-LXC.md`
+3. Im Container: `bash ct-build-kicad.sh` (1–3 h)
+4. Binaries abholen: `pct pull 107 /home/kicad/kicad-build-out/kicad ./kicad`
+
+## Schnellstart lokales Linux
+
+    ./build.sh          # oder: ./build.sh 10.0.8
