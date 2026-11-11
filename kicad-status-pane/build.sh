@@ -28,7 +28,7 @@ sudo apt-get install -y --no-install-recommends \
     python3-dev python3-wxgtk4.0 swig \
     libngspice0-dev libboost-dev libcairo2-dev libcurl4-openssl-dev \
     libglm-dev libprotobuf-dev protobuf-compiler libgit2-dev libnng-dev \
-    libsecret-1-dev libicu-dev gettext
+    libsecret-1-dev libicu-dev gettext unixodbc-dev
 
 # --- Debian 13 "trixie" ships no /usr/bin/wx-config binary -> install wrapper if missing ---
 if ! command -v wx-config >/dev/null 2>&1; then
