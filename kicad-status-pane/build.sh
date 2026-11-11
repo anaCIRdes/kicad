@@ -28,7 +28,7 @@ sudo apt-get install -y --no-install-recommends \
     python3-dev python3-wxgtk4.0 swig \
     libngspice0-dev libboost-dev libcairo2-dev libcurl4-openssl-dev \
     libglm-dev libprotobuf-dev protobuf-compiler libgit2-dev libnng-dev \
-    libsecret-1-dev libicu-dev gettext unixodbc-dev \
+    libsecret-1-dev libicu-dev gettext unixodbc-dev libopencascade-dev \
     libpoppler-dev libpoppler-cpp-dev libpoppler-glib-dev libpoppler-qt6-dev
 
 # --- Debian 13 "trixie" ships no /usr/bin/wx-config binary -> install wrapper if missing ---
@@ -46,12 +46,11 @@ fi
 # --- patch ---
 bash "$HERE/apply-patch.sh" "$SRC"
 
-# --- configure + build ---
+# --- configure + build (KiCad 10 requires OpenCASCADE -> libopencascade-dev above; SPNAV off without libspnav) ---
 cmake -S "$SRC" -B "$BUILD" -G Ninja \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_CXX_FLAGS="-fuse-ld=lld" \
     -DKICAD_SCRIPTING_PYTHON3=ON \
-    -DKICAD_USE_OCC=OFF \
     -DKICAD_USE_SPNAV=OFF
 # full build (default target): also builds resources like images.tar.gz,
 # which cmake --install needs; building only "kicad kicad-cli" breaks the install
