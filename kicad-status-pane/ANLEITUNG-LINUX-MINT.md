@@ -44,7 +44,11 @@ sudo bash make-deb-ubuntu.sh 10.0.8        # erster Lauf: mehrere Stunden
 `make-deb-ubuntu.sh` richtet automatisch ein **Ubuntu-24.04-Chroot** (noble, via
 debootstrap) ein, installiert darin die Build-Abhaengigkeiten (wx 3.2.4,
 OCCT 7.6, ...), baut KiCad darin und erzeugt das .deb mit `dpkg-shlibdeps` im
-Chroot. Ergebnis: `kicad-project-status_10.0.8-1_amd64.deb` — dieses .deb
+Chroot. **Troubleshooting:** Meldet apt im Chroot `Unable to locate package ...`
+/ `no installation candidate`, waren die Paketlisten leer (debootstrap trug
+nur `main` ein) — ab v24 korrigiert das Skript die Quellen (main+universe,
+sources.list und deb822) automatisch und `apt-get update` bricht mit klarer
+Fehlermeldung ab. Einfach erneut starten, es setzt automatisch fort. Ergebnis: `kicad-project-status_10.0.8-1_amd64.deb` — dieses .deb
 linkt gegen glibc 2.39 und laeuft auf **Ubuntu 24.04+ und Linux Mint 22+**:
 
 ```bash
