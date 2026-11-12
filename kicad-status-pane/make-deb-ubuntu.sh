@@ -128,7 +128,7 @@ fix_apt_sources
         echo '--- Sanity-Check nach apt update:'
         apt-cache policy ninja-build libwxgtk3.2-dev libocct-foundation-dev | grep -E '^[a-z]|Candidate:' || true
         apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build git ca-certificates curl wget lld patch sudo file binutils \
+            build-essential cmake ninja-build git ca-certificates curl wget lld patch sudo file binutils dpkg-dev \
             libwxgtk3.2-dev libwxgtk-webview3.2-dev libwxgtk-media3.2-dev \
             libgtk-3-dev libwebkit2gtk-4.1-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
             python3-dev python3-wxgtk4.0 swig \
