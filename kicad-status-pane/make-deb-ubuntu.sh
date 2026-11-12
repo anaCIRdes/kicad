@@ -27,10 +27,12 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exec 9>"$HERE/.make-deb-ubuntu.lock"
 flock -n 9 || { echo "FEHLER: make-deb-ubuntu.sh laeuft bereits in $HERE — bitte warten oder killen" >&2; exit 1; }
 
-# --- Platz-Check (Build braucht ~40-60 GB) ---
+# --- Platz-Check (frischer Chroot braucht ~60 GB, Resume nur ~10 GB) ---
 AVAIL_GB="$(df --output=avail -BG "$HERE" | tail -1 | tr -dc '0-9')"
-if [ "${AVAIL_GB:-0}" -lt 40 ]; then
-    echo "FEHLER: nur ${AVAIL_GB} GB frei in $HERE — mindestens 40 GB noetig" >&2
+NEED_GB=10
+if [ ! -f "${CHROOT:-$HERE/noble-chroot}/.bootstrap-done" ]; then NEED_GB=60; fi
+if [ "${AVAIL_GB:-0}" -lt "$NEED_GB" ]; then
+    echo "FEHLER: nur ${AVAIL_GB} GB frei in $HERE — mindestens ${NEED_GB} GB noetig" >&2
     exit 1
 fi
 CHROOT="${CHROOT:-$HERE/noble-chroot}"
