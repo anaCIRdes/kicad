@@ -40,17 +40,23 @@ mkdir -p "$STAGE/DEBIAN"
 
 # Abhaengigkeiten best-effort ermitteln (dpkg-shlibdeps ueber alle ELF-Binaries)
 DEPS=""
-if command -v dpkg-shlibdeps >/dev/null; then
-    BINARIES="$(cd "$STAGE" && find usr -type f -exec sh -c 'file -b "$1" | grep -q ELF && echo "$1"' _ {} \; 2>/dev/null || true)"
+if command -v dpkg-shlibdeps >/dev/null && command -v file >/dev/null; then
+    BINARIES="$(cd "$STAGE" && find usr -type f -exec sh -c 'file -b "$1" 2>/dev/null | grep -q ELF && echo "$1"' _ {} \; 2>/dev/null || true)"
     if [ -n "$BINARIES" ]; then
-        DEPS="$(cd "$STAGE" && dpkg-shlibdeps -O $BINARIES 2>/dev/null \
-            | sed -n 's/^dependency: //p' | tr ',' '\n' | sed 's/^ *//;s/ *$//' | sort -u | paste -sd, - || true)"
+        # Ausgabe parsen: "dependency: a (>= x), b" ODER "shlibs:Depends=a, b"
+        RAW="$(cd "$STAGE" && dpkg-shlibdeps -O $BINARIES 2>/dev/null || true)"
+        DEPS="$(printf '%s\n' "$RAW" \
+            | sed -n 's/^[A-Za-z:_-]*[=:]\s*//p' \
+            | tr ',' '\n' | sed 's/^ *//;s/ *$//;s/ *(.*$//' \
+            | grep -v '^\*' | grep -v '^$' | sort -u | paste -sd, -)"
     fi
 fi
-# Fallback: statische Kern-Abhaengigkeiten (wxWidgets, Python, OpenCASCADE)
 if [ -z "$DEPS" ]; then
-    DEPS="libwxgtk3.2-1t64 | libwxgtk3.2-1 | libwxgtk3.2-0, python3, libopencascade7, libngspice0, liboce-* | libocct-*"
+    echo "WARN: dpkg-shlibdeps lieferte nichts — Fallback mit festen noble-Paketnamen" >&2
+    DEPS="libc6, libwxgtk3.2-1t64, python3, libngspice0, libocct-foundation-7.6t64, libocct-modeling-data-7.6t64, libocct-modeling-algorithms-7.6t64, libocct-data-exchange-7.6t64, libocct-visualization-7.6t64, libocct-ocaf-7.6t64, libocct-draw-7.6t64, libboost-locale1.83.0, libboost-test1.83.0, libprotobuf32, libgit2-1.7, libnng1.7, libsecret-1-0, libpoppler-qt6-1, libwebkit2gtk-4.1-37, libgtk-3-0t64, libcairo2, libcurl4t64, libicu74, unixodbc, libspnav0"
 fi
+# Sicherheit: keine Globs in Depends erlaubt
+DEPS="$(printf '%s' "$DEPS" | tr ',' '\n' | sed 's/^ *//;s/ *$//' | grep -v '\*' | paste -sd, -)"
 
 cat > "$STAGE/DEBIAN/control" <<EOF
 Package: $PKG
