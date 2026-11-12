@@ -22,6 +22,17 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# --- Lock gegen parallele Läufe (sonst rm/tar-Rennen im Chroot) ---
+exec 9>"$HERE/.make-deb-ubuntu.lock"
+flock -n 9 || { echo "FEHLER: make-deb-ubuntu.sh laeuft bereits in $HERE — bitte warten oder killen" >&2; exit 1; }
+
+# --- Platz-Check (Build braucht ~40-60 GB) ---
+AVAIL_GB="$(df --output=avail -BG "$HERE" | tail -1 | tr -dc '0-9')"
+if [ "${AVAIL_GB:-0}" -lt 40 ]; then
+    echo "FEHLER: nur ${AVAIL_GB} GB frei in $HERE — mindestens 40 GB noetig" >&2
+    exit 1
+fi
 CHROOT="${CHROOT:-$HERE/noble-chroot}"
 MIRROR="${MIRROR:-https://archive.ubuntu.com/ubuntu}"
 VERSION="${1:-${KICAD_VERSION:-10.0.8}}"
@@ -133,11 +144,10 @@ fix_apt_sources
             libpoppler-dev libpoppler-cpp-dev libpoppler-glib-dev libpoppler-qt6-dev \
         && touch /.deps-done"
 
-# --- Paketverzeichnis in den Chroot kopieren ---
-echo ">>> kopiere Paketverzeichnis in den Chroot"
-rm -rf "$CHROOT/root/kicad-status-pane"
+# --- Paketverzeichnis in den Chroot kopieren (NIE loeschen — sonst mitten im Build weg!) ---
+echo ">>> kopiere Paketverzeichnis in den Chroot (ueberschreibt nur Skripte)"
 mkdir -p "$CHROOT/root/kicad-status-pane"
-tar -C "$HERE" -cf - --exclude=noble-chroot --exclude=kicad-src --exclude=kicad-build --exclude=kicad-build-out --exclude=deb-stage . \
+tar -C "$HERE" -cf - --exclude=noble-chroot --exclude=kicad-src --exclude=kicad-build --exclude=kicad-build-out --exclude=deb-stage --exclude=.make-deb-ubuntu.lock . \
     | tar -C "$CHROOT/root/kicad-status-pane" -xf -
 
 # --- Build IM Chroot (SKIP_APT=1: Deps wurden oben schon installiert) ---
