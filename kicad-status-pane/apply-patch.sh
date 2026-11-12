@@ -17,9 +17,6 @@ if [ ! -d "$KICAD_SRC/kicad" ]; then
     exit 1
 fi
 
-cp "$HERE/src/project_status_pane.h"   "$KICAD_SRC/kicad/"
-cp "$HERE/src/project_status_pane.cpp" "$KICAD_SRC/kicad/"
-
 cd "$KICAD_SRC"
 PATCH="$HERE/patches/mod.patch"
 TARGETS="kicad/CMakeLists.txt kicad/kicad_manager_frame.h kicad/kicad_manager_frame.cpp"
@@ -28,10 +25,15 @@ IS_GIT=0
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 && IS_GIT=1
 
 # Already fully applied? (reverse check succeeds) -> skip
+# WICHTIG: erst NACH diesem Check die Pane-Dateien kopieren, sonst aendern sich
+# bei jedem Resume die Datei-Zeitstempel und ninja baut alles neu.
 if [ "$IS_GIT" -eq 1 ] && git apply -R --whitespace=fix --check "$PATCH" 2>/dev/null; then
     echo "Patch already applied to $KICAD_SRC - skipping."
     exit 0
 fi
+
+cp "$HERE/src/project_status_pane.h"   "$KICAD_SRC/kicad/"
+cp "$HERE/src/project_status_pane.cpp" "$KICAD_SRC/kicad/"
 
 # Reset possibly partially patched files to pristine state (safe in a fresh build clone)
 if [ "$IS_GIT" -eq 1 ]; then
