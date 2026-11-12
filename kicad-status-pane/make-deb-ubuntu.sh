@@ -85,6 +85,10 @@ for m in proc sys dev; do
     fi
 done
 cp -L /etc/resolv.conf "$CHROOT/etc/resolv.conf"
+# Hostname im Chroot aufloesen (sonst meckert sudo) und dev/pts mounten
+grep -q "$(hostname)" "$CHROOT/etc/hosts" 2>/dev/null || echo "127.0.0.1 $(hostname)" >> "$CHROOT/etc/hosts"
+mkdir -p "$CHROOT/dev/pts"
+grep -q " $CHROOT/dev/pts " /proc/mounts || mount --bind /dev/pts "$CHROOT/dev/pts" 2>/dev/null || true
 
 # --- /dev-Knoten einzeln durchreichen (in manchen LXC ist /dev im Chroot defekt) ---
 for d in null zero full random urandom tty ptmx; do
@@ -138,7 +142,7 @@ tar -C "$HERE" -cf - --exclude=noble-chroot --exclude=kicad-src --exclude=kicad-
 
 # --- Build IM Chroot (SKIP_APT=1: Deps wurden oben schon installiert) ---
 echo ">>> baue KiCad $VERSION im noble-Chroot (dauert beim ersten Mal Stunden; wiederaufsetzbar)"
-run_chroot "cd /root/kicad-status-pane && SKIP_APT=1 KICAD_VERSION=$VERSION bash build.sh $VERSION"
+run_chroot "cd /root/kicad-status-pane && SKIP_APT=1 SKIP_INSTALL=1 KICAD_VERSION=$VERSION bash build.sh $VERSION"
 
 # --- .deb IM Chroot erzeugen (dpkg-shlibdeps -> noble-Abhaengigkeiten) ---
 echo ">>> erzeuge .deb im noble-Chroot"
