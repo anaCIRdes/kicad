@@ -41,9 +41,27 @@ command -v apt-get >/dev/null || { echo "FEHLER: apt-get nicht gefunden (Debian/
 # --- debootstrap auf dem Host ---
 if ! command -v debootstrap >/dev/null 2>&1; then
     echo ">>> installiere debootstrap auf dem Host"
-    apt-get update -qq
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq debootstrap
+    apt-get update || { echo "FEHLER: apt-get update auf dem Host fehlgeschlagen" >&2; exit 1; }
+    DEBIAN_FRONTEND=noninteractive apt-get install -y debootstrap
 fi
+
+# --- apt-Quellen im Chroot sicherstellen (main + universe, egal ob sources.list oder deb822) ---
+fix_apt_sources() {
+    if [ -f "$CHROOT/etc/apt/sources.list.d/ubuntu.sources" ]; then
+        sed -i 's/^Components: main restricted$/Components: main restricted universe/; s/^Components: main$/Components: main universe/' \
+            "$CHROOT/etc/apt/sources.list.d/ubuntu.sources"
+    fi
+    if [ -f "$CHROOT/etc/apt/sources.list" ]; then
+        sed -i 's/ main restricted universe$/ main restricted universe/; s/ main restricted$/ main restricted universe/; s/ main universe$/ main universe/; s/ main$/ main universe/' \
+            "$CHROOT/etc/apt/sources.list" 2>/dev/null || true
+    fi
+    # Fallback: universe garantiert aktiv, egal welches Format debootstrap wrote
+    if ! grep -rq 'universe' "$CHROOT/etc/apt/sources.list" "$CHROOT/etc/apt/sources.list.d/" 2>/dev/null; then
+        echo "deb $MIRROR noble main universe" >> "$CHROOT/etc/apt/sources.list"
+        echo "deb $MIRROR noble-updates main universe" >> "$CHROOT/etc/apt/sources.list"
+        echo "deb $MIRROR noble-security main universe" >> "$CHROOT/etc/apt/sources.list"
+    fi
+}
 
 # --- noble-Chroot anlegen (einmalig) ---
 if [ ! -f "$CHROOT/.bootstrap-done" ]; then
@@ -51,10 +69,9 @@ if [ ! -f "$CHROOT/.bootstrap-done" ]; then
     rm -rf "$CHROOT"
     mkdir -p "$CHROOT"
     debootstrap --variant=minbase noble "$CHROOT" "$MIRROR"
-    # universe aktivieren (wx, occt, webkit liegen dort)
-    sed -i 's/ main$/ main universe/; s/ main restricted$/ main restricted universe/' "$CHROOT/etc/apt/sources.list"
     touch "$CHROOT/.bootstrap-done"
 fi
+fix_apt_sources
 
 # --- Mounts + DNS (idempotent) ---
 grep -q " $CHROOT/proc " /proc/mounts || mount --bind /proc "$CHROOT/proc"
@@ -69,13 +86,16 @@ for m in proc sys dev; do
 done
 cp -L /etc/resolv.conf "$CHROOT/etc/resolv.conf"
 
-run_chroot() { chroot "$CHROOT" /bin/bash -c "$1"; }
+run_chroot() { chroot "$CHROOT" /bin/bash -c "set -e; $1"; }
 
 # --- Build-Abhaengigkeiten IM CHROOT (noble-Paketnamen, einmalig) ---
 if [ ! -f "$CHROOT/.deps-done" ]; then
     echo ">>> installiere Build-Abhaengigkeiten im noble-Chroot (einmalig, gross)"
-    run_chroot 'export DEBIAN_FRONTEND=noninteractive
-        apt-get update -qq
+    fix_apt_sources
+    run_chroot "export DEBIAN_FRONTEND=noninteractive
+        apt-get -o Acquire::Retries=5 update || { echo 'APT-UPDATE-FEHLER IM CHROOT (siehe Meldungen oben)'; exit 1; }
+        echo '--- Sanity-Check nach apt update:'
+        apt-cache policy ninja-build libwxgtk3.2-dev libocct-foundation-dev | grep -E '^[a-z]|Candidate:' || true
         apt-get install -y --no-install-recommends \
             build-essential cmake ninja-build git ca-certificates curl wget lld patch sudo file binutils \
             libwxgtk3.2-dev libwxgtk-webview3.2-dev libwxgtk-media3.2-dev \
@@ -87,7 +107,7 @@ if [ ! -f "$CHROOT/.deps-done" ]; then
             libocct-foundation-dev libocct-modeling-data-dev libocct-modeling-algorithms-dev \
             libocct-data-exchange-dev libocct-visualization-dev libocct-ocaf-dev libocct-draw-dev \
             libpoppler-dev libpoppler-cpp-dev libpoppler-glib-dev libpoppler-qt6-dev \
-        && touch /.deps-done'
+        && touch /.deps-done"
 fi
 
 # --- Paketverzeichnis in den Chroot kopieren ---
