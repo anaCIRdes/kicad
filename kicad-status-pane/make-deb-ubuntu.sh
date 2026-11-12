@@ -117,7 +117,11 @@ fix_apt_sources
             libwxgtk3.2-dev libwxgtk-webview3.2-dev libwxgtk-media3.2-dev \
             libgtk-3-dev libwebkit2gtk-4.1-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
             python3-dev python3-wxgtk4.0 swig \
-            libngspice0-dev libboost-dev libboost-locale-dev libcairo2-dev libcurl4-openssl-dev \
+            libngspice0-dev libboost-dev libboost-locale-dev libboost-test-dev libboost-filesystem-dev \
+            libboost-thread-dev libboost-system-dev libboost-regex-dev libboost-program-options-dev \
+            libboost-date-time-dev libboost-chrono-dev libboost-atomic-dev libboost-serialization-dev \
+            libboost-iostreams-dev libboost-context-dev libboost-coroutine-dev libboost-graph-dev \
+            libcairo2-dev libcurl4-openssl-dev \
             libglm-dev libprotobuf-dev protobuf-compiler libgit2-dev libnng-dev \
             libsecret-1-dev libicu-dev gettext unixodbc-dev libspnav-dev \
             libocct-foundation-dev libocct-modeling-data-dev libocct-modeling-algorithms-dev \
