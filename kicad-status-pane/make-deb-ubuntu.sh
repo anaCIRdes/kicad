@@ -86,6 +86,16 @@ for m in proc sys dev; do
 done
 cp -L /etc/resolv.conf "$CHROOT/etc/resolv.conf"
 
+# --- /dev-Knoten einzeln durchreichen (in manchen LXC ist /dev im Chroot defekt) ---
+for d in null zero full random urandom tty ptmx; do
+    if [ -e "/dev/$d" ]; then
+        [ -e "$CHROOT/dev/$d" ] || { rm -f "$CHROOT/dev/$d"; touch "$CHROOT/dev/$d"; }
+        mount --bind "/dev/$d" "$CHROOT/dev/$d" 2>/dev/null || true
+    fi
+done
+chroot "$CHROOT" /bin/sh -c 'echo ok > /dev/null' 2>/dev/null \
+    || { echo "FEHLER: /dev/null im Chroot nicht beschreibbar — Container braucht volle Mount-Rechte (privileged)" >&2; exit 1; }
+
 run_chroot() { chroot "$CHROOT" /bin/bash -c "set -e; $1"; }
 
 # --- Build-Abhaengigkeiten IM CHROOT (noble-Paketnamen, einmalig) ---
@@ -93,6 +103,12 @@ if [ ! -f "$CHROOT/.deps-done" ]; then
     echo ">>> installiere Build-Abhaengigkeiten im noble-Chroot (einmalig, gross)"
     fix_apt_sources
     run_chroot "export DEBIAN_FRONTEND=noninteractive
+        # gpgv fehlt in manchen minbase-Chroots -> erst ohne Signatur holen, dann gpgv installieren
+        if ! command -v gpgv >/dev/null 2>&1; then
+            echo '--- gpgv fehlt im Chroot, bootstrap mit --allow-insecure ...'
+            apt-get -o Acquire::AllowInsecureRepositories=true -o Acquire::Retries=5 update || true
+            apt-get install -y --allow-unauthenticated gpgv ca-certificates || true
+        fi
         apt-get -o Acquire::Retries=5 update || { echo 'APT-UPDATE-FEHLER IM CHROOT (siehe Meldungen oben)'; exit 1; }
         echo '--- Sanity-Check nach apt update:'
         apt-cache policy ninja-build libwxgtk3.2-dev libocct-foundation-dev | grep -E '^[a-z]|Candidate:' || true
