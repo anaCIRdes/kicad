@@ -98,10 +98,10 @@ chroot "$CHROOT" /bin/sh -c 'echo ok > /dev/null' 2>/dev/null \
 
 run_chroot() { chroot "$CHROOT" /bin/bash -c "set -e; $1"; }
 
-# --- Build-Abhaengigkeiten IM CHROOT (noble-Paketnamen, einmalig) ---
-if [ ! -f "$CHROOT/.deps-done" ]; then
-    echo ">>> installiere Build-Abhaengigkeiten im noble-Chroot (einmalig, gross)"
-    fix_apt_sources
+# --- Build-Abhaengigkeiten IM CHROOT (noble-Paketnamen; idempotent, laeuft bei jedem Aufruf) ---
+# (kein Marker-Guard: so greifen Paket-Ergaenzungen auch bei erneutem Lauf nach einem Abbruch)
+echo ">>> installiere/pruefe Build-Abhaengigkeiten im noble-Chroot"
+fix_apt_sources
     run_chroot "export DEBIAN_FRONTEND=noninteractive
         # gpgv fehlt in manchen minbase-Chroots -> erst ohne Signatur holen, dann gpgv installieren
         if ! command -v gpgv >/dev/null 2>&1; then
@@ -117,14 +117,13 @@ if [ ! -f "$CHROOT/.deps-done" ]; then
             libwxgtk3.2-dev libwxgtk-webview3.2-dev libwxgtk-media3.2-dev \
             libgtk-3-dev libwebkit2gtk-4.1-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
             python3-dev python3-wxgtk4.0 swig \
-            libngspice0-dev libboost-dev libcairo2-dev libcurl4-openssl-dev \
+            libngspice0-dev libboost-dev libboost-locale-dev libcairo2-dev libcurl4-openssl-dev \
             libglm-dev libprotobuf-dev protobuf-compiler libgit2-dev libnng-dev \
             libsecret-1-dev libicu-dev gettext unixodbc-dev libspnav-dev \
             libocct-foundation-dev libocct-modeling-data-dev libocct-modeling-algorithms-dev \
             libocct-data-exchange-dev libocct-visualization-dev libocct-ocaf-dev libocct-draw-dev \
             libpoppler-dev libpoppler-cpp-dev libpoppler-glib-dev libpoppler-qt6-dev \
         && touch /.deps-done"
-fi
 
 # --- Paketverzeichnis in den Chroot kopieren ---
 echo ">>> kopiere Paketverzeichnis in den Chroot"
