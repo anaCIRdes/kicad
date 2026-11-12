@@ -29,9 +29,14 @@ PKG="kicad-project-status"
 
 # --- root ---
 if [ "$(id -u)" -ne 0 ]; then
-    echo ">>> bitte als root starten (sudo bash $0 $* )" >&2
+    if command -v sudo >/dev/null 2>&1; then
+        exec sudo bash "$0" "$@"
+    fi
+    echo ">>> bitte als root starten (sudo bash $0 $*)" >&2
     exit 1
 fi
+# Hinweis: Wir sind root — 'sudo' muss auf dem Host NICHT installiert sein.
+command -v apt-get >/dev/null || { echo "FEHLER: apt-get nicht gefunden (Debian/Ubuntu-Container erwartet)" >&2; exit 1; }
 
 # --- debootstrap auf dem Host ---
 if ! command -v debootstrap >/dev/null 2>&1; then
@@ -55,6 +60,13 @@ fi
 grep -q " $CHROOT/proc " /proc/mounts || mount --bind /proc "$CHROOT/proc"
 grep -q " $CHROOT/sys "  /proc/mounts || mount --bind /sys  "$CHROOT/sys"
 grep -q " $CHROOT/dev "  /proc/mounts || mount --bind /dev  "$CHROOT/dev"
+for m in proc sys dev; do
+    if ! grep -q " $CHROOT/$m " /proc/mounts; then
+        echo "FEHLER: bind-mount $CHROOT/$m fehlgeschlagen — der Container braucht Mount-Rechte" >&2
+        echo "        (auf dem Proxmox-Host: CT als privileged anlegen bzw. 'pct set <vmid> -features nesting=1' reicht NICHT, mount braucht CAP_SYS_ADMIN)" >&2
+        exit 1
+    fi
+done
 cp -L /etc/resolv.conf "$CHROOT/etc/resolv.conf"
 
 run_chroot() { chroot "$CHROOT" /bin/bash -c "$1"; }
