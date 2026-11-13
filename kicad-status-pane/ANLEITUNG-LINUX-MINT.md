@@ -36,8 +36,11 @@ Auf CT107 (root) genuegt:
 ```bash
 cd kicad-status-pane
 sudo bash make-deb-ubuntu.sh 10.0.8        # erster Lauf: mehrere Stunden
-# Langlauf: nohup sudo bash make-deb-ubuntu.sh 10.0.8 > build-ubuntu.log 2>&1 &
-# danach:   tail -f build-ubuntu.log         # Fortschritt verfolgen
+# Langlauf WICHTIG mit setsid, sonst stirbt der Job, sobald die Konsolen-Session
+# (pct enter / SSH) endet — dann bricht das Staging mitten drin ab:
+setsid nohup sudo bash make-deb-ubuntu.sh 10.0.8 > build-ubuntu.log 2>&1 < /dev/null &
+disown
+# danach in einem ZWEITEN Terminal:   tail -f build-ubuntu.log
 # Abbruch + Resume: Script einfach erneut starten, cmake baut dort weiter
 ```
 
