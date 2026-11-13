@@ -15,7 +15,8 @@
 #
 # Aufruf:   sudo bash make-deb-ubuntu.sh [kicad-version]     z. B. 10.0.8
 # Resume:   sudo bash make-deb-ubuntu.sh            (macht dort weiter, wo es war)
-# Langlauf: nohup sudo bash make-deb-ubuntu.sh > build-ubuntu.log 2>&1 &
+# Langlauf: setsid nohup sudo bash make-deb-ubuntu.sh > build-ubuntu.log 2>&1 < /dev/null & disown
+# (ohne setsid stirbt der Job, wenn die Konsolen-Session endet)
 #
 # Ergebnis: kicad-project-status_<version>-1_amd64.deb im Paketverzeichnis,
 # installierbar auf Ubuntu 24.04+ / Linux Mint 22+ mit: sudo apt install ./....deb
